@@ -56,19 +56,19 @@ int main(){
                 scanf("%d", &op2);
                 switch (op2){
                 case 1:
-                    /* code */
+                    mostrarEntregas(f);
                     break;
                 case 2:
                     /* code */
                     break;
                 case 3:
-                    /* code */
+                    liberar_fila(f);
                     break;
                 case 4:
-                    /* code */
+                    fila_vazia(f);
                     break;
                 case 5:
-                    /* code */
+                    f = ordenar_entregas(f);
                     break;
                 default:
                     break;
@@ -80,19 +80,19 @@ int main(){
                 scanf("%d", &op3);
                 switch (op3){
                 case 1:
-                    /* code */
+                    inserir_naoEfetuada(p, c);
                     break;
                 case 2:
-                    /* code */
+                    mostrar_naoEfetuadas(p);
                     break;
                 case 3:
                     /* code */
                     break;
                 case 4:
-                    /* code */
+                    pilha_vazia(p);
                     break;
                 case 5:
-                    /* code */
+                    liberar_pilha(p);
                     break;
                 default:
                     break;
@@ -104,10 +104,10 @@ int main(){
                 scanf("%d", &op4);
                 switch (op4){
                 case 1:
-                    /* code */
+                    inserir_entrega(f2, c);
                     break;
                 case 2:
-                    /* code */
+                    mostrarEntregas(f2);
                     break;
                 default:
                     break;

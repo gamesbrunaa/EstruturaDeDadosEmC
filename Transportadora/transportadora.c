@@ -174,38 +174,64 @@ Fila ordenar_entregas(Fila *f){
 
 }
 
-typedef struct entregasNaoEfetuadas{
-
-} NaoEfetuadas;
 
 typedef struct pilha{
-
+    Entrega *primeiro;
 } Pilha;
 
 Pilha *criar_pilha(){
+    Pilha *P = (Pilha *) calloc(1, sizeof(Pilha));
+    P->primeiro = NULL;
 
+    return P;
 }
 
-NaoEfetuadas *criar(Cliente *c){
-
-}
-
-void inserir_naoEfetuada(Pilha *p, Cliente *c){
-
+void inserir_naoEfetuada(Pilha *p, Entrega *c, Cliente *novo){
+    if(c->conseguiu_entregar > 5){
+        if(pilha_vazia(p)){
+            p->primeiro = novo;
+            printf("Entrega realizada!");
+        } else{
+            novo->prox = p->primeiro;
+            p->primeiro = p;
+            printf("Entrega realizada!");
+        }
+    }else{
+        printf("Não foi possivel realizar entrega!");
+    }
 }
 
 void mostrar_naoEfetuadas(Pilha *p){
+    Entrega *n = p->primeiro;
+    while(n != NULL){
+        printf("Nome: %s \n", n->c->nome);
+        printf("Codigo: %d \n", n->c->identificador);
+        printf("CPF: %d \n", n->c->cpf);
+        printf("Endereõ: %s \n", n->c->endereco);
 
+        n = n->prox;
+    }
 }
 
-NaoEfetuadas *remover(Pilha *p){
+Entrega *remover(Pilha *p){
+    if (pilha_vazia(p)) return NULL;
+    Entrega * removido = p->primeiro;
+    Entrega* segundo = p->primeiro->prox;
+    free(p->primeiro);
+    p->primeiro = segundo;
 
+    return removido;
 }
 
 void liberar_pilha(Pilha *p){
-
+    Entrega *segundo = p->primeiro->prox;
+    free(p->primeiro);
+    p->primeiro = segundo;
 }
 
 int pilha_vazia(Pilha *p){
-
+    if(p->primeiro == NULL)
+        return 1;
+    else
+        return 0;
 }
