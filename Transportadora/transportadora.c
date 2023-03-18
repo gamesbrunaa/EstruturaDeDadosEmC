@@ -51,10 +51,10 @@ Cliente *inserir_cliente(Lista *l, int cont){
 void mostrarTodosClientes(Lista *l){
     Cliente *n = l->inicio;
     while(n != NULL){
-        printf("Código: %d \n", n->identificador);
+        printf("C�digo: %d \n", n->identificador);
         printf("Nome: %s \n", n->nome);
         printf("CPF: %d", n->cpf);
-        printf("Endereço: %s \n", n->endereco);
+        printf("Endere�o: %s \n", n->endereco);
 
         n = n->prox;
     }
@@ -97,7 +97,6 @@ int lista_vazia(Lista *l){
 }
 
 typedef struct rotaEntrega{
-    int conseguiu_entregar;
     Cliente *c;
     struct rotaEntrega *prox;
     
@@ -119,7 +118,6 @@ Entrega *criar_entrega(Cliente *cliente){
     Entrega *nova = (Entrega *) calloc(1, sizeof(Entrega));
     nova->c = cliente;
     nova->prox = NULL;
-    nova->conseguiu_entregar = rand () % 10;
 
     return nova;
 }
@@ -141,13 +139,13 @@ void mostrarEntregas(Fila *f){
         printf("Nome: %s \n", n->c->nome);
         printf("Codigo: %d \n", n->c->identificador);
         printf("CPF: %d \n", n->c->cpf);
-        printf("Endereõ: %s \n", n->c->endereco);
+        printf("Endere�: %s \n", n->c->endereco);
 
         n = n->prox;
     }
 }
 
-Entrega *remover_entrega(Fila *f){
+Entrega *remover_entrega(Fila *f, Cliente *c){
     if (fila_vazia(f)) return NULL;
     Entrega * removido = f->begin;
     Entrega* segundo = f->begin->prox;
@@ -176,7 +174,7 @@ Fila ordenar_entregas(Fila *f){
 
 
 typedef struct pilha{
-    Entrega *primeiro;
+    Cliente *primeiro;
 } Pilha;
 
 Pilha *criar_pilha(){
@@ -187,36 +185,30 @@ Pilha *criar_pilha(){
 }
 
 void inserir_naoEfetuada(Pilha *p, Entrega *c, Cliente *novo){
-    if(c->conseguiu_entregar > 5){
-        if(pilha_vazia(p)){
+    if(pilha_vazia(p)){
             p->primeiro = novo;
-            printf("Entrega realizada!");
-        } else{
+    } else{
             novo->prox = p->primeiro;
-            p->primeiro = p;
-            printf("Entrega realizada!");
+            p->primeiro = novo;
         }
-    }else{
-        printf("Não foi possivel realizar entrega!");
-    }
 }
 
 void mostrar_naoEfetuadas(Pilha *p){
-    Entrega *n = p->primeiro;
+    Cliente *n = p->primeiro;
     while(n != NULL){
-        printf("Nome: %s \n", n->c->nome);
-        printf("Codigo: %d \n", n->c->identificador);
-        printf("CPF: %d \n", n->c->cpf);
-        printf("Endereõ: %s \n", n->c->endereco);
+        printf("Nome: %s \n", n->nome);
+        printf("Codigo: %d \n", n->identificador);
+        printf("CPF: %d \n", n->cpf);
+        printf("Endere�: %s \n", n->endereco);
 
         n = n->prox;
     }
 }
 
-Entrega *remover(Pilha *p){
+Cliente *remover(Pilha *p){
     if (pilha_vazia(p)) return NULL;
-    Entrega * removido = p->primeiro;
-    Entrega* segundo = p->primeiro->prox;
+    Cliente * removido = p->primeiro;
+    Cliente * segundo = p->primeiro->prox;
     free(p->primeiro);
     p->primeiro = segundo;
 
@@ -224,7 +216,7 @@ Entrega *remover(Pilha *p){
 }
 
 void liberar_pilha(Pilha *p){
-    Entrega *segundo = p->primeiro->prox;
+    Cliente *segundo = p->primeiro->prox;
     free(p->primeiro);
     p->primeiro = segundo;
 }

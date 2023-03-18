@@ -17,10 +17,10 @@ Fila *criar_fila();
 Entrega *criar_entrega(Cliente *c);
 void inserir_entrega(Fila *f, Cliente *c);
 void mostrarEntregas(Fila *f);
-Entrega *remover_entrega(Fila *f);
+Entrega *remover_entrega(Fila *f, Cliente *c);
 void liberar_fila(Fila *f);
 int fila_vazia(Fila *f);
-Fila ordenar_entregas(Fila *f);
+Fila *ordenar_entregas(Fila *f);
 
 typedef struct entregasNaoEfetuadas NaoEfetuadas;
 typedef struct pilha Pilha;
