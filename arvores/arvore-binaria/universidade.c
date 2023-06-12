@@ -10,22 +10,26 @@ typedef struct {
 } Disciplina;
 
 // Estrutura para a árvore de disciplinas
-typedef struct ArvoreDisciplinas {
+typedef struct {
     Disciplina disciplina;
     struct ArvoreDisciplinas *esquerda;
     struct ArvoreDisciplinas *direita;
 } ArvoreDisciplinas;
 
 // Definição da estrutura de um curso
-typedef struct Curso {
+typedef struct {
     int codigo;
     char nome[50];
     int quantidadeBlocos;
     int semanasPorDisciplina;
-    struct Curso *esquerda;
-    struct Curso *direita;
     struct ArvoreDisciplinas *disciplinas; // Ponteiro para a árvore de disciplinas do curso
 } Curso;
+
+typedef struct {
+    Curso curso;
+    struct ArvoreCurso *esq;
+    struct ArvoreCurso *dir;
+} ArvoreCurso;
 
 // Função para criar um novo nó na árvore de disciplinas
 ArvoreDisciplinas* criarNoDisciplina(Disciplina disciplina) {
@@ -152,12 +156,12 @@ void liberarArvoreCursos(Curso* raiz) {
     }
 }
 
-void ImprimirCursos_OrdemCrescente(Curso* raiz, int codigo);
-void ImprimirCursos_Dados(Curso* raiz, int codigo);
-void ImprimirCursos_QtdBlocos(Curso* raiz, int blocos);
-void ImprimirDisciplinas_OrdemCrescente(Curso* raiz, int codigo, ArvoreDisciplinas* raiz2, int codigo2);
-void ImprimirDisciplinas_Dados(Curso* raiz, int codigo, ArvoreDisciplinas* raiz2, int codigo2);
-void ImprimirDisciplinas_Bloco(Curso* raiz, int bloco, int codigo);
-void ImprimirDisciplinas_CargaHoraria(Curso* raiz, int cargaH, int codigo);
+void ImprimirCursos_OrdemCrescente(Curso* raiz, int codigo); //ok
+void ImprimirCursos_Dados(Curso* raiz, int codigo); //ok
+void ImprimirDisciplinas_OrdemCrescente(Curso* raiz, int codigo, ArvoreDisciplinas* raiz2, int codigo2); //ok
+void ImprimirDisciplinas_Dados(Curso* raiz, int codigo, ArvoreDisciplinas* raiz2, int codigo2); //ok
+void ImprimirCursos_QtdBlocos(Curso* raiz, int blocos); //ok
+void ImprimirDisciplinas_Bloco(Curso* raiz, int bloco, int codigo); //ok
+void ImprimirDisciplinas_CargaHoraria(Curso* raiz, int cargaH, int codigo); //ok
 void ExcluirDisciplina(Curso* raiz, int codigo, ArvoreDisciplinas* raiz2, int codigo2);
 void ExcluirCurso(Curso* raiz, int codigo);
