@@ -12,8 +12,8 @@ typedef struct {
 // Estrutura para a árvore de disciplinas
 typedef struct {
     Disciplina disciplina;
-    struct ArvoreDisciplinas *esquerda;
-    struct ArvoreDisciplinas *direita;
+    ArvoreDisciplinas *esquerda;
+    ArvoreDisciplinas *direita;
 } ArvoreDisciplinas;
 
 // Estrutura para armazenar os dados de um curso
@@ -28,8 +28,8 @@ typedef struct {
 // Estrutura para a árvore de Cursos
 typedef struct {
     Curso curso;
-    struct ArvoreCurso *esquerda;
-    struct ArvoreCurso *direita;
+    ArvoreCurso *esquerda;
+    ArvoreCurso *direita;
 } ArvoreCurso;
 
 // Função para criar um novo nó na árvore de disciplinas
@@ -161,22 +161,23 @@ void exibirArvoreCurso(ArvoreCurso* raiz) {
 
 //(1) Imprimir a árvore de cursos em ordem crescente pelo código do curso
 void ImprimirCursos_OrdemCrescente(ArvoreCurso* raiz, int codigo){
-    if(raiz != NULL){
-        if(codigo == raiz->curso.codigo)
-            exibirArvoreCurso(raiz);
+    ArvoreCurso *aux = buscarCurso(raiz, codigo);
+    if(aux != NULL){
+        exibirArvoreCurso(raiz);
+    } else{
+        printf("Curso não encontrado.\n");
     }
 }
 
 //(2) Imprimir os dados de um curso dado o código do mesmo
 void imprimirCursos_Dados(ArvoreCurso* raiz, int codigo){
-    if(raiz != NULL){
+    ArvoreCurso *aux = buscarCurso(raiz, codigo);
+    if(aux != NULL){
         if(codigo == raiz->curso.codigo){
             exibirCurso(raiz->curso);
-        } else if(codigo < raiz->curso.codigo){
-            imprimirCursos_Dados(raiz->esquerda, codigo);
-        }else{
-            imprimirCursos_Dados(raiz->direita, codigo);
         }
+    } else{
+        printf("Curso não encontrado.\n");
     }
 }
 
@@ -193,29 +194,29 @@ void imprimirCursos_QtdBlocos(ArvoreCurso* raiz, int quantidadeBlocos){
 
 //(4) Imprimir a árvore de disciplinas em ordem crescente pelo código das disciplinas dado o código do curso;
 void ImprimirDisciplinas_OrdemCrescente(ArvoreCurso* raiz, int codigo){
-    ArvoreDisciplinas *aux;
-    if(raiz != NULL){
-        if(codigo == raiz->curso.codigo){
-            aux = raiz->curso.disciplinas;
-            exibirArvoreDisciplinas(aux);
-        }
+    ArvoreCurso *aux = buscarCurso(raiz, codigo);
+    if(aux != NULL){
+        exibirArvoreDisciplinas(aux);
+    } else {
+        printf("Curso não encontrado.\n");
     }
 }
 
 //(5) Imprimir os dados de uma disciplina dado o código dela e do curso ao qual ela pertence;
 void ImprimirDisciplinas_Dados(ArvoreCurso* raiz, int codigo, int codigo2){
-    ArvoreDisciplinas *aux;
-    if(raiz != NULL){
-        if(codigo == raiz->curso.codigo){
-            aux = raiz->curso.disciplinas;
-            if(codigo2 == aux->disciplina.codigo){
-                exibirDisciplina(aux->disciplina);
-            } else if(codigo2 < aux->disciplina.codigo){
-                ImprimirDisciplinas_Dados(raiz->esquerda, codigo, codigo2);
-            }else{
-                imprimirDisciplinas_Dados(raiz->direita, codigo, codigo2);
+    ArvoreCurso *cursoEncontrado = buscarCurso(raiz, codigo2);
+    if(cursoEncontrado != NULL){
+        ArvoreDisciplinas *disciplinas = cursoEncontrado->curso.disciplinas;
+        if(disciplinas != NULL){
+            Disciplina *disciplinaEncontrada = buscarDisciplina(disciplinas, codigo);
+            if(disciplinaEncontrada != NULL){
+                exibirDisciplina(*disciplinaEncontrada);
             }
+        } else{
+            printf("O curso não possui disciplinas cadastradas!\n");
         }
+    } else{
+        printf("Curso não encontrado!\n");
     }
 }
 
@@ -267,68 +268,219 @@ void imprimirDisciplinas_CargaHoraria(ArvoreCurso* raiz, int cargaH, int codigo)
     }
 }
 
+ArvoreDisciplinas* encontrarSucessor(ArvoreDisciplinas* raiz) {
+    if (raiz == NULL) {
+        return NULL;
+    } else if (raiz->esquerda == NULL) {
+        return raiz;
+    } else {
+        return encontrarSucessor(raiz->esquerda);
+    }
+}
+
+ArvoreDisciplinas* removerNoDisciplina(ArvoreDisciplinas* raiz, int codigo) {
+    if (raiz == NULL) {
+        return NULL;
+    } else if (codigo < raiz->disciplina.codigo) {
+        raiz->esquerda = removerNoDisciplina(raiz->esquerda, codigo);
+    } else if (codigo > raiz->disciplina.codigo) {
+        raiz->direita = removerNoDisciplina(raiz->direita, codigo);
+    } else {
+        if (raiz->esquerda == NULL && raiz->direita == NULL) {
+            free(raiz);
+            return NULL;
+        } else if (raiz->esquerda == NULL) {
+            ArvoreDisciplinas* temp = raiz->direita;
+            free(raiz);
+            return temp;
+        } else if (raiz->direita == NULL) {
+            ArvoreDisciplinas* temp = raiz->esquerda;
+            free(raiz);
+            return temp;
+        } else {
+            ArvoreDisciplinas* sucessor = encontrarSucessor(raiz->direita);
+            raiz->disciplina = sucessor->disciplina;
+            raiz->direita = removerNoDisciplina(raiz->direita, sucessor->disciplina.codigo);
+        }
+    }
+    return raiz;
+}
+
 //(8) Excluir uma disciplina dado o código da disciplina e o código do curso
-void excluirDisciplina(ArvoreCurso* raiz, int codigo, ArvoreDisciplinas** raiz2, int codigo2){
-    ArvoreDisciplinas *aux, *end;
-    if(raiz != NULL){ //verifica se a arvore de curso é vazia
-        if(codigo == raiz->curso.codigo){ // procura o curso com o codigo indicado
-            if(*raiz2 != NULL){ //verifica se a arvore de disciplinas é vazia
-                if(((*raiz2)->esquerda == NULL) && ((*raiz2)->direita == NULL)){
-                    aux = *raiz2;
-                    *raiz2 = NULL;
+void excluirDisciplina(ArvoreCurso** raiz, int codigoCurso, ArvoreDisciplinas** raiz2, int codigoDisciplina) {
+    if (*raiz != NULL) { // verifica se a árvore de cursos não é vazia
+        if (codigoCurso == (*raiz)->curso.codigo) { // encontra o curso com o código indicado
+            if (*raiz2 != NULL) { // verifica se a árvore de disciplinas não é vazia
+                if ((*raiz2)->disciplina.codigo == codigoDisciplina) {
+                    ArvoreDisciplinas* aux = *raiz2;
+                    *raiz2 = removerNoDisciplina(*raiz2, (*raiz2)->disciplina.codigo); // chama a função para remover o nó da árvore de disciplinas
                     free(aux);
-                } else if(((*raiz2)->esquerda == NULL) || ((*raiz2)->direita ==NULL)){
-                    end = enderecoFilho(*raiz2);
-                    aux = *raiz2;
-                    *raiz2 = end;
-                    free(aux);
-                } else{
-                    end = maiorEsquerda((*raiz2)->esquerda);
-                    aux = *raiz2;
-                    filho->direita = (*raiz2)->esquerda;
-                    *raiz2 = (*raiz2)->esquerda;
-                    free(aux);
+                } else if (codigoDisciplina < (*raiz2)->disciplina.codigo) {
+                    excluirDisciplina(raiz, codigoCurso, &(*raiz2)->esquerda, codigoDisciplina);
+                } else {
+                    excluirDisciplina(raiz, codigoCurso, &(*raiz2)->direita, codigoDisciplina);
                 }
             }
-        }else if(codigo < raiz->curso.codigo){
-            excluirCurso(&(*raiz)->esquerda, codigo);
-        }else{
-            excluirCurso(&(*raiz)->direita, codigo);
+        } else if (codigoCurso < (*raiz)->curso.codigo) {
+            excluirDisciplina(&(*raiz)->esquerda, codigoCurso, raiz2, codigoDisciplina);
+        } else {
+            excluirDisciplina(&(*raiz)->direita, codigoCurso, raiz2, codigoDisciplina);
         }
+    }
+}
+
+ArvoreCurso* maiorEsquerda(ArvoreCurso* raiz) {
+    if (raiz == NULL) {
+        return NULL;
+    } else if (raiz->direita == NULL) {
+        return raiz;
+    } else {
+        return maiorEsquerda(raiz->direita);
+    }
+}
+
+ArvoreCurso** enderecoFilho(ArvoreCurso* pai, ArvoreCurso* filho) {
+    if (pai == NULL) {
+        return NULL;
+    } else if (pai->esquerda == filho) {
+        return &(pai->esquerda);
+    } else if (pai->direita == filho) {
+        return &(pai->direita);
+    } else {
+        return NULL;
     }
 }
 
 //(9) Excluir um curso dado o código do mesmo, desde que não tenha nenhuma disciplina cadastrada para aquele curso
-void excluirCurso(ArvoreCurso** raiz, int codigo){
-    ArvoreCurso *aux, *end;
-    if(*raiz != NULL){
-        if(codigo == (*raiz)->curso.codigo){ //procura o curso com o código indicado
-            if((*raiz)->curso.disciplinas != NULL){ //verifica se existem disciplinas cadastradas
-                printf("Não é possivel excluir curso, pois o mesmo possui disciplinas cadastradas! \n");
-            } else{
-                if(((*raiz)->esquerda == NULL) && ((*raiz)->direita == NULL)){
-                    aux = *raiz;
+void excluirCurso(ArvoreCurso** raiz, int codigo) {
+    if (*raiz != NULL) {
+        if (codigo == (*raiz)->curso.codigo) { // Procura o curso com o código indicado
+            if ((*raiz)->curso.disciplinas != NULL) { // Verifica se existem disciplinas cadastradas
+                printf("Não é possível excluir o curso, pois o mesmo possui disciplinas cadastradas!\n");
+            } else {
+                if ((*raiz)->esquerda == NULL && (*raiz)->direita == NULL) {
+                    free(*raiz);
                     *raiz = NULL;
-                    free(aux);
-                } else if(((*raiz)->esquerda == NULL) || ((*raiz)->direita ==NULL)){
-                    end = enderecoFilho(*raiz);
-                    aux = *raiz;
-                    *raiz = end;
-                    free(aux);
-                } else{
-                    end = maiorEsquerda((*raiz)->esquerda);
-                    aux = *raiz;
-                    filho->direita = (*raiz)->esquerda;
-                    *raiz = (*raiz)->esquerda;
-                    free(aux);
+                } else if ((*raiz)->esquerda == NULL || (*raiz)->direita == NULL) {
+                    ArvoreCurso* temp;
+                    if ((*raiz)->esquerda != NULL) {
+                        temp = (*raiz)->esquerda;
+                    } else {
+                        temp = (*raiz)->direita;
+                    }
+                    free(*raiz);
+                    *raiz = temp;
+                } else {
+                    ArvoreCurso* sucessor = maiorEsquerda((*raiz)->esquerda);
+                    (*raiz)->curso = sucessor->curso;
+                    excluirCurso(&(*raiz)->esquerda, sucessor->curso.codigo);
                 }
             }
-        }else if(codigo < (*raiz)->curso.codigo){
+        } else if (codigo < (*raiz)->curso.codigo) {
             excluirCurso(&(*raiz)->esquerda, codigo);
-        }else{
+        } else {
             excluirCurso(&(*raiz)->direita, codigo);
         }
     }
 }
 
 
+int main() {
+    // Criando uma árvore de cursos vazia
+    struct Curso* arvoreCursos = NULL;
+
+    int codigoCurso;
+
+    int op = 0;
+    while (op != -1){
+        printf("MENU: \n");
+        printf("(1) - Imprimir a árvore de cursos em ordem crescente pelo código do curso \n");
+        printf("(2) - Imprimir os dados de um curso dado o código do mesmo \n");
+        printf("(3) - Imprimir todos os cursos com a mesma quantidade de blocos, onde o usuário informe a quantidade de blocos \n");
+        printf("(4) - Imprimir a árvore de disciplinas em ordem crescente pelo código das disciplinas dado o código do curso \n");
+        printf("(5) - Imprimir os dados de uma disciplina dado o código dela e do curso ao qual ela pertence \n");
+        printf("(6) - Imprimir as disciplinas de um determinado bloco de um curso, dado o bloco e o código do curso\n");
+        printf("(7) - Imprimir todas as disciplinas de um determinado curso com a mesma carga horária, onde o código do curso e a carga horária devem ser informadas pelo usuário \n");
+        printf("(8) - Excluir uma disciplina dado o código da disciplina e o código do curso \n");
+        printf("(9) - Excluir um curso dado o código do mesmo, desde que não tenha nenhuma disciplina cadastrada para aquele curso. \n");
+        printf("Digite a opção desejada: ");
+        scanf("%d", &op);
+        
+        switch (op) {
+            case 1:
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Árvore de cursos em ordem crescente pelo código do curso:\n");
+                imprimirCursos_OrdemCrescente(arvoreCursos, codigoCurso);
+                break;
+            case 2:
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                imprimirCurso_Dados(arvoreCursos, codigoCurso);
+                break;
+            case 3:
+                int quantidadeBlocos;
+                printf("Digite a quantidade de blocos: ");
+                scanf("%d", &quantidadeBlocos);
+                printf("Cursos com a mesma quantidade de blocos:\n");
+                imprimirCursos_QtdBlocos(arvoreCursos, quantidadeBlocos);
+                break;
+            case 4:
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                imprimirDisciplinas_OrdemCrescente(arvoreCursos, codigoCurso);
+                break;
+            case 5:
+                int codigoDisciplina;
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite o código da disciplina: ");
+                scanf("%d", &codigoDisciplina);
+                imprimirDisciplina_Dados(arvoreCursos, codigoDisciplina, codigoCurso);
+                break;
+            case 6:
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite o número do bloco: ");
+                int numeroBloco;
+                scanf("%d", &numeroBloco);
+                imprimirDisciplinas_Bloco(arvoreCursos, numeroBloco, codigoCurso);
+                break;
+            case 7:
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite a carga horária: ");
+                int cargaHoraria;
+                scanf("%d", &cargaHoraria);
+                imprimirDisciplinas_CargaHoraria(arvoreCursos, cargaHoraria, codigoCurso);
+                break;
+            case 8:
+                int codigoDisciplinaExcluir, codigoCurso;
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite o código da disciplina: ");
+                scanf("%d", &codigoDisciplinaExcluir);
+                Curso* cursoExcluirDisciplina = buscarCurso(arvoreCursos, codigoCurso);
+                if (cursoExcluirDisciplina != NULL){
+                    excluirDisciplina(arvoreCursos, codigoCurso, cursoExcluirDisciplina->disciplinas, codigoDisciplinaExcluir);
+                } else {
+                    printf("Curso não encontrado.\n");
+                }
+                break;
+            case 9:
+                printf("Digite o código do curso: ");
+                int codigoCursoExcluir;
+                scanf("%d", &codigoCursoExcluir);
+                excluirCurso(arvoreCursos, codigoCursoExcluir);
+                break;
+            default:
+                printf("Opção Inválida!\n");
+                break;
+        }
+    }
+
+    // Liberando a memória alocada pela árvore de cursos
+    liberarArvoreCursos(arvoreCursos);
+
+    return 0;
+}

@@ -1,10 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "universidade.h"
-
 int main() {
     // Criando uma árvore de cursos vazia
     struct Curso* arvoreCursos = NULL;
+
+    int codigoCurso;
 
     int op = 0;
     while (op != -1){
@@ -21,66 +19,77 @@ int main() {
         printf("Digite a opção desejada: ");
         scanf("%d", &op);
         
-        switch (op){
+        switch (op) {
             case 1:
-                /* code */
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Árvore de cursos em ordem crescente pelo código do curso:\n");
+                imprimirCursos_OrdemCrescente(arvoreCursos, codigoCurso);
                 break;
             case 2:
-                /* code */
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                imprimirCurso_Dados(arvoreCursos, codigoCurso);
                 break;
             case 3:
-                /* code */
+                int quantidadeBlocos;
+                printf("Digite a quantidade de blocos: ");
+                scanf("%d", &quantidadeBlocos);
+                printf("Cursos com a mesma quantidade de blocos:\n");
+                imprimirCursos_QtdBlocos(arvoreCursos, quantidadeBlocos);
                 break;
             case 4:
-                /* code */
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                imprimirDisciplinas_OrdemCrescente(arvoreCursos, codigoCurso);
                 break;
             case 5:
-                /* code */
+                int codigoDisciplina;
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite o código da disciplina: ");
+                scanf("%d", &codigoDisciplina);
+                imprimirDisciplina_Dados(arvoreCursos, codigoDisciplina, codigoCurso);
                 break;
             case 6:
-                /* code */
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite o número do bloco: ");
+                int numeroBloco;
+                scanf("%d", &numeroBloco);
+                imprimirDisciplinas_Bloco(arvoreCursos, numeroBloco, codigoCurso);
                 break;
             case 7:
-                /* code */
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite a carga horária: ");
+                int cargaHoraria;
+                scanf("%d", &cargaHoraria);
+                imprimirDisciplinas_CargaHoraria(arvoreCursos, cargaHoraria, codigoCurso);
                 break;
             case 8:
-                /* code */
+                int codigoDisciplinaExcluir, codigoCurso;
+                printf("Digite o código do curso: ");
+                scanf("%d", &codigoCurso);
+                printf("Digite o código da disciplina: ");
+                scanf("%d", &codigoDisciplinaExcluir);
+                Curso* cursoExcluirDisciplina = buscarCurso(arvoreCursos, codigoCurso);
+                if (cursoExcluirDisciplina != NULL){
+                    excluirDisciplina(arvoreCursos, codigoCurso, cursoExcluirDisciplina->disciplinas, codigoDisciplinaExcluir);
+                } else {
+                    printf("Curso não encontrado.\n");
+                }
                 break;
             case 9:
-                /* code */
+                printf("Digite o código do curso: ");
+                int codigoCursoExcluir;
+                scanf("%d", &codigoCursoExcluir);
+                excluirCurso(arvoreCursos, codigoCursoExcluir);
                 break;
             default:
-                printf("Opção Inválida! \n");
+                printf("Opção Inválida!\n");
                 break;
         }
-    }
-    
-    // Inserindo cursos na árvore
-    arvoreCursos = inserirCurso(arvoreCursos, 15, "Ciencia da Computacao", 18, 20);
-    arvoreCursos = inserirCurso(arvoreCursos, 20, "Engenharia Civil", 16, 18);
-    arvoreCursos = inserirCurso(arvoreCursos, 10, "Administracao", 12, 15);
-
-    // Buscando um curso pelo código
-    int codigoBusca = 15;
-    struct Curso* cursoEncontrado = buscarCurso(arvoreCursos, codigoBusca);
-    if (cursoEncontrado != NULL) {
-        printf("Curso encontrado:\n");
-        printf("Código: %d\n", cursoEncontrado.codigo);
-        printf("Nome: %s\n", cursoEncontrado->nome);
-        printf("Quantidade de blocos: %d\n", cursoEncontrado->quantidadeBlocos);
-        printf("Semanas por disciplina: %d\n", cursoEncontrado->semanasPorDisciplina);
-        printf("\n");
-
-        // Inserindo disciplinas no curso encontrado
-        inserirDisciplina(cursoEncontrado, 1, "Matematica", 1, 400);
-        inserirDisciplina(cursoEncontrado, 2, "Algoritmos", 2, 600);
-        inserirDisciplina(cursoEncontrado, 3, "Banco de Dados", 3, 500);
-
-        // Exibindo as disciplinas do curso
-        printf("Disciplinas do curso:\n");
-        exibirDisciplinas(cursoEncontrado);
-    } else {
-        printf("Curso nao encontrado.\n");
     }
 
     // Liberando a memória alocada pela árvore de cursos
