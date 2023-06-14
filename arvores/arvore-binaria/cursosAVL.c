@@ -51,20 +51,6 @@ Disciplina* criarDisciplina(int codigo, char nome[], int bloco, int cargaHoraria
     return novaDisciplina;
 }
 
-// Função para inserir uma disciplina na árvore de disciplinas
-ArvoreDisciplinas* inserirDisciplina(ArvoreDisciplinas* raiz, Disciplina disciplina) {
-    if (raiz == NULL) {
-        raiz = criarNoDisciplina(disciplina);
-    } else {
-        if (disciplina.codigo < raiz->disciplina.codigo) {
-            raiz->esquerda = inserirDisciplina(raiz->esquerda, disciplina);
-        } else if (disciplina.codigo > raiz->disciplina.codigo) {
-            raiz->direita = inserirDisciplina(raiz->direita, disciplina);
-        }
-    }
-    return raiz;
-}
-
 // Função para criar um novo nó na árvore de cursos
 ArvoreCurso* criarNoCurso(Curso curso) {
     ArvoreCurso* novoNo = (ArvoreCurso*)malloc(sizeof(ArvoreCurso));
@@ -85,18 +71,74 @@ Curso* criarCurso(int codigo, char nome[], int quantidadeBlocos, int semanasPorD
     return novoCurso;
 }
 
-// Função para inserir um curso na árvore de cursos
-ArvoreCurso* inserirCurso(ArvoreCurso* raiz, Curso curso) {
-    if (raiz == NULL) {
-        raiz = criarNoCurso(curso);
-    } else {
-        if (curso.codigo < raiz->curso.codigo) {
-            raiz->esquerda = inserirCurso(raiz->esquerda, curso);
-        } else if (curso.codigo > raiz->curso.codigo) {
-            raiz->direita = inserirCurso(raiz->direita, curso);
-        }
+// Função para calcular o fator de balanceamento da arvore de disciplinas
+int fatorBalancemantoDisciplinas(ArvoreDisciplinas *raiz);
+
+//Função para realizar o balanceamento da arvore de disciplinas (se necessário)
+void rotacaoDireitaDisciplinas(ArvoreDisciplinas** raiz);
+
+//Função para realizar o balanceamento da arvore de disciplinas (se necessário)
+void rotacaoEsquerdaDisciplinas(ArvoreDisciplinas** raiz);
+
+//Função para atualizar altura da arvore de disciplinas (se necessário)
+void atualizarAlturaDisciplinas(ArvoreDisciplinas** raiz);
+
+// Função para inserir uma disciplina na árvore de disciplinas
+ArvoreDisciplinas* inserirDisciplina(ArvoreDisciplinas** raiz, Disciplina *disciplina) {
+    int fb;
+    if(*raiz == NULL){
+        *raiz = disciplina;
+    }else if(disciplina->codigo < (*raiz)->disciplina.codigo){
+        inserirDisciplina(&((*raiz)->esquerda), disciplina);
+    }else{
+        inserirDisciplina(&((*raiz)->direita), disciplina);
     }
-    return raiz;
+    fb = fatorBalanceamentoDisciplinas(*raiz);
+    if(fb == 2){
+        if(fatorBalanceamentoDisciplinas((*raiz)->esquerda) < 0)
+            rotacaoEsquerdaDisciplinas(&((*raiz)->esquerda));
+        rotacaoDireitaDisciplinas(raiz);
+    }else if(fb == -2){
+        if(fatorBalanceamentoDisciplinas((*raiz)->direita) > 0)
+            rotacaoDireitaDisciplinas(&((*raiz)->direita));
+        rotacaoEsquerdaDisciplinas(raiz);
+    }
+    atualizarAlturaDisciplinas(raiz);
+}
+
+// Função para calcular o fator de balanceamento da arvore de cursos
+int fatorBalancemantoCurso(ArvoreCurso *raiz);
+
+//Função para realizar o balanceamento da arvore de cursos (se necessário)
+void rotacaoDireitaCurso(ArvoreCurso** raiz);
+
+//Função para realizar o balanceamento da arvore de cursos (se necessário)
+void rotacaoEsquerdaCurso(ArvoreCurso** raiz);
+
+//Função para atualizar altura da arvore de cursos (se necessário)
+void atualizarAlturaCurso(ArvoreCurso** raiz);
+
+// Função para inserir um curso na árvore de cursos
+ArvoreCurso* inserirCurso(ArvoreCurso** raiz, Curso* curso) {
+    int fb;
+    if(*raiz == NULL){
+        *raiz = curso;
+    }else if(curso->codigo < (*raiz)->curso.codigo){
+        inserirDisciplina(&((*raiz)->esquerda), curso);
+    }else{
+        inserirDisciplina(&((*raiz)->direita), curso);
+    }
+    fb = fatorBalanceamentoCurso(*raiz);
+    if(fb == 2){
+        if(fatorBalanceamentoCurso((*raiz)->esquerda) < 0)
+            rotacaoEsquerdaCurso(&((*raiz)->esquerda));
+        rotacaoDireitaCurso(raiz);
+    }else if(fb == -2){
+        if(fatorBalanceamentoCurso((*raiz)->direita) > 0)
+            rotacaoDireitaCurso(&((*raiz)->direita));
+        rotacaoEsquerdaCurso(raiz);
+    }
+    atualizarAlturaCurso(raiz);
 }
 
 // Função para buscar uma disciplina na árvore de disciplinas
@@ -270,9 +312,10 @@ void imprimirDisciplinas_CargaHoraria(ArvoreCurso* raiz, int cargaH, int codigo)
 //(8) Excluir uma disciplina dado o código da disciplina e o código do curso
 void excluirDisciplina(ArvoreCurso* raiz, int codigo, ArvoreDisciplinas** raiz2, int codigo2){
     ArvoreDisciplinas *aux, *end;
+    int fb;
     if(raiz != NULL){ //verifica se a arvore de curso é vazia
         if(codigo == raiz->curso.codigo){ // procura o curso com o codigo indicado
-            if(*raiz2 != NULL){ //verifica se a arvore de disciplinas é vazia
+            if(*raiz2 != NULL){ //verifica se a arvore de disciplinas do curso é vazia
                 if(((*raiz2)->esquerda == NULL) && ((*raiz2)->direita == NULL)){
                     aux = *raiz2;
                     *raiz2 = NULL;
@@ -291,16 +334,29 @@ void excluirDisciplina(ArvoreCurso* raiz, int codigo, ArvoreDisciplinas** raiz2,
                 }
             }
         }else if(codigo < raiz->curso.codigo){
-            excluirCurso(&(*raiz)->esquerda, codigo);
+            excluirCurso(&(*raiz2)->esquerda, codigo);
         }else{
-            excluirCurso(&(*raiz)->direita, codigo);
+            excluirCurso(&(*raiz2)->direita, codigo);
         }
+
+        fb = fatorBalanceamentoDisciplinas(*raiz2);
+        if(fb == 2){
+            if(fatorBalanceamentoDisciplinas((*raiz2)->esquerda) < 0)
+                rotacaoEsquerdaDisciplinas(&((*raiz2)->esquerda));
+            rotacaoDireitaDisciplinas(raiz2);
+        }else if(fb == -2){
+            if(fatorBalanceamentoDisciplinas((*raiz2)->direita) > 0)
+                rotacaoDireitaDisciplinas(&((*raiz2)->direita));
+            rotacaoEsquerdaDisciplinas(raiz2);
+        }
+        atualizarAlturaDisciplinas(raiz);
     }
 }
 
 //(9) Excluir um curso dado o código do mesmo, desde que não tenha nenhuma disciplina cadastrada para aquele curso
 void excluirCurso(ArvoreCurso** raiz, int codigo){
     ArvoreCurso *aux, *end;
+    int fb;
     if(*raiz != NULL){
         if(codigo == (*raiz)->curso.codigo){ //procura o curso com o código indicado
             if((*raiz)->curso.disciplinas != NULL){ //verifica se existem disciplinas cadastradas
@@ -328,6 +384,18 @@ void excluirCurso(ArvoreCurso** raiz, int codigo){
         }else{
             excluirCurso(&(*raiz)->direita, codigo);
         }
+
+        fb = fatorBalanceamentoCurso(*raiz);
+        if(fb == 2){
+            if(fatorBalanceamentoCurso((*raiz)->esquerda) < 0)
+                rotacaoEsquerdaCurso(&((*raiz)->esquerda));
+            rotacaoDireitaCurso(raiz);
+        }else if(fb == -2){
+            if(fatorBalanceamentoCurso((*raiz)->direita) > 0)
+                rotacaoDireitaCurso(&((*raiz)->direita));
+            rotacaoEsquerdaCurso(raiz);
+        }
+        atualizarAlturaCurso(raiz);
     }
 }
 
