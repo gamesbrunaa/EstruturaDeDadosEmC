@@ -237,28 +237,30 @@ ArvoreCurso* inserirCursoAVL(ArvoreCurso** raiz, Curso *curso) {
 
 // Função para buscar uma disciplina na árvore de disciplinas
 Disciplina* buscarDisciplinaAVL(ArvoreDisciplinas* raiz, int codigo) {
-    if (raiz == NULL || raiz->disciplina.codigo == codigo) {
-        return &(raiz->disciplina);
+    while (raiz != NULL && raiz->disciplina.codigo != codigo) {
+        if (codigo < raiz->disciplina.codigo) {
+            raiz = raiz->esquerda;
+        } else {
+            raiz = raiz->direita;
+        }
     }
-
-    if (codigo < raiz->disciplina.codigo) {
-        return buscarDisciplinaAVL(raiz->esquerda, codigo);
+    if (raiz == NULL) {
+        return NULL;
     } else {
-        return buscarDisciplinaAVL(raiz->direita, codigo);
+        return &(raiz->disciplina);
     }
 }
 
 // Função para buscar um curso na árvore de cursos
 ArvoreCurso* buscarCursoAVL(ArvoreCurso* raiz, int codigo) {
-    if (raiz == NULL || raiz->curso.codigo == codigo) {
-        return raiz;
+    while (raiz != NULL && raiz->curso.codigo != codigo) {
+        if (codigo < raiz->curso.codigo) {
+            raiz = raiz->esquerda;
+        } else {
+            raiz = raiz->direita;
+        }
     }
-
-    if (codigo < raiz->curso.codigo) {
-        return buscarCursoAVL(raiz->esquerda, codigo);
-    } else {
-        return buscarCursoAVL(raiz->direita, codigo);
-    }
+    return raiz;
 }
 
 // Função para exibir os dados de uma disciplina

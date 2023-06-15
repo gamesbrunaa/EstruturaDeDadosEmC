@@ -23,10 +23,10 @@ ArvoreCurso* inserirCurso(ArvoreCurso** raiz, Curso *curso);
 Disciplina* buscarDisciplina(ArvoreDisciplinas* raiz, int codigo);
 
 // Função para buscar um curso na árvore de cursos
-ArvoreCurso* buscarCurso(ArvoreCurso* raiz, int codigo);
+Curso* buscarCurso(ArvoreCurso* raiz, int codigo);
 
 // Função para exibir os dados de uma disciplina
-void exibirDisciplina(Disciplina disciplina);
+void exibirDisciplina(Disciplina *disciplina);
 
 // Função para exibir a árvore de disciplinas em ordem
 void exibirArvoreDisciplinas(ArvoreDisciplinas* raiz);
@@ -47,16 +47,16 @@ void ImprimirDisciplinas_OrdemCrescente(ArvoreCurso* raiz, int codigo);
 //(5) Imprimir os dados de uma disciplina dado o código dela e do curso ao qual ela pertence;
 void ImprimirDisciplinas_Dados(ArvoreCurso* raiz, int codigo, int codigo2);
 
-//(6) Imprimir as disciplinas de um determinado bloco de um curso, dado o bloco e o código do curso
-void imprimirDisciplinas_Bloco(ArvoreDisciplinas* raiz, int bloco);
+//(6) Imprimir as disciplinas de um determinado bloco de um curso, dado o bloco e o código do curswo
+void imprimirDisciplinas_Bloco(ArvoreCurso* raiz, int bloco, int codigo);
 //(7) Imprimir todas as disciplinas de um determinado curso com a mesma carga horária, onde o código do curso e a carga horária devem ser informadas pelo usuário
-void imprimirDisciplinas_CargaHoraria(ArvoreDisciplinas* raiz, int cargaHoraria);
+void imprimirDisciplinas_CargaHoraria(ArvoreCurso* raiz, int cargaHoraria, int codigo);
 
 ArvoreDisciplinas* encontrarSucessor(ArvoreDisciplinas* raiz);
 ArvoreDisciplinas* removerNoDisciplina(ArvoreDisciplinas* raiz, int codigo);
 
 //(8) Excluir uma disciplina dado o código da disciplina e o código do curso
-void excluirDisciplina(ArvoreCurso** raiz, int codigoCurso, ArvoreDisciplinas** raiz2, int codigoDisciplina);
+void excluirDisciplina(ArvoreCurso** raiz, int codigoCurso, int codigoDisciplina);
 
 ArvoreCurso* maiorEsquerda(ArvoreCurso* raiz);
 
