@@ -1,102 +1,104 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
+#include <math.h>
 
-#define MAX_VERTICES 100 // Número máximo de vértices
-#define INF 1e9           // Valor infinito para representar distâncias inalcançáveis
+#define N 4  // Número de vértices (tamanho do grafo)
+#define INF 1.0  // Valor infinito para distâncias inalcançáveis
 
 typedef struct {
-    int destino;
-    double confiabilidade;
+    float confiabilidade;
 } Aresta;
 
 typedef struct {
-    Aresta arestas[MAX_VERTICES];
-    int numArestas;
-} Vertice;
-
-typedef struct {
-    Vertice vertices[MAX_VERTICES];
-    int numVertices;
+    int num_vertices;
+    Aresta arestas[N][N];
 } Grafo;
 
-void inicializarGrafo(Grafo *grafo, int numVertices) {
+typedef struct {
+    float dist[N];
+    int anterior[N];
+} ResultadoDijkstra;
+
+int arestasAdjacentes(Grafo *grafo, int u, int v) {
+    return grafo->arestas[u][v].confiabilidade > 0.0;
+}
+
+ResultadoDijkstra dijkstra(Grafo *grafo, int origem) {
+    ResultadoDijkstra resultado;
+    int i, v, u;
+
+    for (i = 0; i < grafo->num_vertices; i++) {
+        resultado.dist[i] = -INFINITY;  // Inicializa com valor negativo
+        resultado.anterior[i] = -1;
+    }
+
+    resultado.dist[origem] = 1.0;
+
+    for (i = 0; i < grafo->num_vertices - 1; i++) {
+        for (v = 0; v < grafo->num_vertices; v++) {
+            for (u = 0; u < grafo->num_vertices; u++) {
+                if (arestasAdjacentes(grafo, u, v)) {
+                    float nova_confiabilidade = resultado.dist[u] * grafo->arestas[u][v].confiabilidade;
+                    if (nova_confiabilidade > resultado.dist[v]) {
+                        resultado.dist[v] = nova_confiabilidade;
+                        resultado.anterior[v] = u;
+                    }
+                }
+            }
+        }
+    }
+
+    return resultado;
+}
+
+void imprimirCaminho(ResultadoDijkstra resultado, int destino) {
+    if (resultado.dist[destino] <= 0) {
+        printf("Caminho nao encontrado.\n");
+        return;
+    }
+
+    printf("Confiabilidade maxima: %f\n", resultado.dist[destino]);
+    printf("Caminho: ");
+
+    int caminho[N];
+    int tamanhoCaminho = 0;
+
+    int atual = destino;
+    while (atual != -1) {
+        caminho[tamanhoCaminho++] = atual;
+        atual = resultado.anterior[atual];
+    }
+
     int i;
 
-    grafo->numVertices = numVertices;
-    for (i = 0; i < numVertices; i++) {
-        grafo->vertices[i].numArestas = 0;
-    }
-}
-
-void adicionarAresta(Grafo *grafo, int origem, int destino, double confiabilidade) {
-    Aresta aresta = {destino, confiabilidade};
-    grafo->vertices[origem].arestas[grafo->vertices[origem].numArestas] = aresta;
-    grafo->vertices[origem].numArestas++;
-}
-
-void dijkstra(Grafo *grafo, int origem, int destino) {
-    double dist[MAX_VERTICES];
-    int visitado[MAX_VERTICES];
-    int i, count;
-
-    for (i = 0; i < grafo->numVertices; i++) {
-        dist[i] = 0.0; // Inicializa as distâncias com 0 (conexões não visitadas)
-        visitado[i] = 0;
-    }
-    dist[origem] = 1.0; // A confiabilidade da origem é 1 (100%)
-
-    for (count = 0; count < grafo->numVertices - 1; count++) {
-        int u = -1;
-        for (i = 0; i < grafo->numVertices; i++) {
-            if (!visitado[i] && (u == -1 || dist[i] > dist[u])) {
-                u = i;
-            }
-        }
-
-        visitado[u] = 1;
-
-        for (i = 0; i < grafo->vertices[u].numArestas; i++) {
-            Aresta aresta = grafo->vertices[u].arestas[i];
-            int v = aresta.destino;
-            double confiabilidade = aresta.confiabilidade;
-            if (dist[u] * confiabilidade > dist[v]) {
-                dist[v] = dist[u] * confiabilidade;
-            }
+    for (i = tamanhoCaminho - 1; i >= 0; i--) {
+        printf("%d", caminho[i]);
+        if (i > 0) {
+            printf(" -> ");
         }
     }
 
-    printf("A confiabilidade máxima entre %d e %d é %.6lf\n", origem, destino, dist[destino]);
+    printf("\n");
 }
-
 
 int main() {
-    int numVertices = 0, numArestas = 0;
-    int origem = 0, destino = 0, i;
-    double confiabilidade;
+    Grafo grafo = {
+        .num_vertices = N,
+        .arestas = {
+            { {0.0}, {0.7}, {0.8}, {0.0} },
+            { {0.0}, {0.0}, {0.0}, {0.0} },
+            { {0.0}, {0.0}, {0.0}, {0.9} },
+            { {0.0}, {0.0}, {0.0}, {0.0} }
+        }
+    };
 
-    printf("Digite o numero de vertices: ");
-    scanf("%d", &numVertices);
+    int origem = 0;   // Vértice de origem
+    int destino = 3;   // Vértice de destino
 
-    printf("Digite o numero de arestas: ");
-    scanf("%d", &numArestas);
-
-    Grafo grafo;
-    inicializarGrafo(&grafo, numVertices);
-
-    for (i = 0; i < numArestas; i++) {
-        int u, v;
-        scanf("%d %d %lf", &u, &v, &confiabilidade);
-        adicionarAresta(&grafo, u, v, confiabilidade);
-    }
-
-    printf("Digite a origem: ");
-    scanf("%d", &origem);
-
-    printf("Digite o destino: ");
-    scanf("%d", &destino);
-
-    dijkstra(&grafo, origem, destino);
+    ResultadoDijkstra resultado = dijkstra(&grafo, origem);
+    imprimirCaminho(resultado, destino);
 
     return 0;
 }
