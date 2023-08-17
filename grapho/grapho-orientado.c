@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#define MAX_VERTICES 1000 // Número máximo de vértices
+#define MAX_VERTICES 100 // Número máximo de vértices
 #define INF 1e9           // Valor infinito para representar distâncias inalcançáveis
 
 typedef struct {
@@ -69,9 +69,10 @@ void dijkstra(Grafo *grafo, int origem, int destino) {
     printf("A confiabilidade máxima entre %d e %d é %.6lf\n", origem, destino, dist[destino]);
 }
 
+
 int main() {
-    int numVertices, numArestas;
-    int origem, destino, i;
+    int numVertices = 0, numArestas = 0;
+    int origem = 0, destino = 0, i;
     double confiabilidade;
 
     printf("Digite o numero de vertices: ");
