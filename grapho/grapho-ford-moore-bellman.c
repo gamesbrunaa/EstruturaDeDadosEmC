@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <time.h>
 
-#define N 4  // Número de discos
+#define N 4         // Número de discos
 #define NUM_PEGS 3  // Número de pinos
+#define NUM_CONFIGURACOES 81
 
 typedef struct {
     int localizacao[N];
@@ -24,50 +24,47 @@ int arestasAdjacentes(Vertice v1, Vertice v2) {
     return diferencaCont == 1;
 }
 
-void FordMooreBellman(Vertice grapho[], int start, int end) {
-    int distancia[1 << N];
-    int pais[1 << N];
-    int i, count, v, u;
-    
-    for (i = 0; i < (1 << N); i++) {
+void fordMooreBellman(Vertice grapho[], int start, int end) {
+    int distancia[NUM_CONFIGURACOES];
+    int pais[NUM_CONFIGURACOES];
+    int i, j, v;
+
+    for (i = 0; i < NUM_CONFIGURACOES; i++) {
         distancia[i] = INT_MAX;
         pais[i] = -1;
     }
-    
+
     distancia[start] = 0;
-    
-    for (count = 0; count < (1 << N) - 1; count++) {
-        for (u = 0; u < (1 << N); u++) {
-            for (v = 0; v < (1 << N); v++) {
-                if (arestasAdjacentes(grapho[u], grapho[v]) && distancia[u] + 1 < distancia[v]) {
-                    distancia[v] = distancia[u] + 1;
-                    pais[v] = u;
+
+    for (i = 0; i < NUM_CONFIGURACOES - 1; i++) {
+        for (j = 0; j < NUM_CONFIGURACOES; j++) {
+            if (distancia[j] != INT_MAX) {
+                int v;
+                for (v = 0; v < NUM_CONFIGURACOES; v++) {
+                    if (arestasAdjacentes(grapho[j], grapho[v]) && distancia[j] + 1 < distancia[v]) {
+                        distancia[v] = distancia[j] + 1;
+                        pais[v] = j;
+                    }
                 }
             }
         }
     }
-    
-    int caminho[1 << N];
-    int tamanhoCaminho = 0;
-    int rastrear = end;
-    while (rastrear != -1) {
-        caminho[tamanhoCaminho++] = rastrear;
-        rastrear = pais[rastrear];
+
+    printf("Caminho minimo entre as configurações %d e %d:\n", start, end);
+    printf("%d ", end);
+    v = pais[end];
+    while (v != start) {
+        printf("%d ", v);
+        v = pais[v];
     }
-    
-    printf("Caminho minimo:\n");
-    for (i = tamanhoCaminho - 1; i >= 0; i--) {
-        printf("%d ", caminho[i]);
-    }
-    printf("\n");
+    printf("%d\n", start);
 }
 
 int main() {
-    clock_t start_time, end_time;
     int i, j;
 
-    Vertice grapho[1 << N];
-    for (i = 0; i < (1 << N); i++) {
+    Vertice grapho[NUM_CONFIGURACOES];
+    for (i = 0; i < NUM_CONFIGURACOES; i++) {
         int num = i;
         for (j = 0; j < N; j++) {
             grapho[i].localizacao[j] = num % NUM_PEGS + 1;
@@ -76,14 +73,9 @@ int main() {
     }
 
     int start = 0;
-    int end = (1 << N) - 1;
+    int end = 80;
 
-    start_time = clock();
-    FordMooreBellman(grapho, start, end);
-    end_time = clock();
-
-    double tempo = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
-    printf("Tempo gasto: %lf segundos\n", tempo);
+    fordMooreBellman(grapho, start, end);
 
     return 0;
 }

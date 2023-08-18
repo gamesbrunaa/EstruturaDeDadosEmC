@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <time.h>
 
-#define N 4  // Número de discos
+#define N 4         // Número de discos
 #define NUM_PEGS 3  // Número de pinos
+#define NUM_CONFIGURACOES 81
 
 typedef struct {
     int localizacao[N];
@@ -25,12 +25,12 @@ int arestasAdjacentes(Vertice v1, Vertice v2) {
 }
 
 void dijkstra(Vertice grapho[], int start, int end) {
-    int distancia[1 << N];
-    int visitado[1 << N];
-    int pais[1 << N];
+    int distancia[NUM_CONFIGURACOES];
+    int visitado[NUM_CONFIGURACOES];
+    int pais[NUM_CONFIGURACOES];
     int i, count, v;
     
-    for (i = 0; i < (1 << N); i++) {
+    for (i = 0; i < NUM_CONFIGURACOES; i++) {
         distancia[i] = INT_MAX;
         visitado[i] = 0;
         pais[i] = -1;
@@ -38,9 +38,9 @@ void dijkstra(Vertice grapho[], int start, int end) {
     
     distancia[start] = 0;
     
-    for (count = 0; count < (1 << N) - 1; count++) {
+    for (count = 0; count < NUM_CONFIGURACOES - 1; count++) {
         int u = -1;
-        for (i = 0; i < (1 << N); i++) {
+        for (i = 0; i < NUM_CONFIGURACOES; i++) {
             if (!visitado[i] && (u == -1 || distancia[i] < distancia[u])) {
                 u = i;
             }
@@ -48,7 +48,7 @@ void dijkstra(Vertice grapho[], int start, int end) {
         
         visitado[u] = 1;
         
-        for (v = 0; v < (1 << N); v++) {
+        for (v = 0; v < NUM_CONFIGURACOES; v++) {
             if (!visitado[v] && arestasAdjacentes(grapho[u], grapho[v]) && distancia[u] + 1 < distancia[v]) {
                 distancia[v] = distancia[u] + 1;
                 pais[v] = u;
@@ -56,27 +56,21 @@ void dijkstra(Vertice grapho[], int start, int end) {
         }
     }
     
-    int caminho[1 << N];
-    int tamanhoCaminho = 0;
-    int rastrear = end;
-    while (rastrear != -1) {
-        caminho[tamanhoCaminho++] = rastrear;
-        rastrear = pais[rastrear];
+    printf("Caminho minimo entre as configurações %d e %d:\n", start, end);
+    printf("%d ", end);
+    v = pais[end];
+    while (v != start) {
+        printf("%d ", v);
+        v = pais[v];
     }
-    
-    printf("Caminho minimo:\n");
-    for (i = tamanhoCaminho - 1; i >= 0; i--) {
-        printf("%d ", caminho[i]);
-    }
-    printf("\n");
+    printf("%d\n", start);
 }
 
 int main() {
-    clock_t start_time, end_time;
     int i, j;
 
-    Vertice grapho[1 << N];
-    for (i = 0; i < (1 << N); i++) {
+    Vertice grapho[NUM_CONFIGURACOES];
+    for (i = 0; i < NUM_CONFIGURACOES; i++) {
         int num = i;
         for (j = 0; j < N; j++) {
             grapho[i].localizacao[j] = num % NUM_PEGS + 1;
@@ -85,14 +79,9 @@ int main() {
     }
 
     int start = 0;
-    int end = (1 << N) - 1;
+    int end = 80;
 
-    start_time = clock();
     dijkstra(grapho, start, end);
-    end_time = clock();
-
-    double tempo = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
-    printf("Tempo gasto: %lf segundos\n", tempo);
 
     return 0;
 }

@@ -12,7 +12,7 @@ void hanoi(int n, int origem, int destino, int auxiliar) {
 }
 
 int main() {
-    int n = 5;  // Número de discos
+    int n = 3;  // Número de discos
     hanoi(n, 1, 3, 2); // Chamada da função com torres de origem, destino e auxiliar
 
     return 0;
